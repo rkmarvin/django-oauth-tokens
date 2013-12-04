@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from tyoi.oauth2 import AccessTokenRequest, AccessTokenRequestError, AccessTokenResponseError
-from tyoi.oauth2.grants import AuthorizationCode, ClientCredentials
+from tyoi.oauth2.grants import AuthorizationCode  # , ClientCredentials
 from tyoi.oauth2.authenticators import ClientPassword
 from urlparse import urlparse
 from models import UserCredentials
@@ -10,8 +10,10 @@ import logging
 
 log = logging.getLogger('oauth_tokens')
 
+
 class OAuthError(Exception):
     pass
+
 
 class BaseAccessToken(object):
 
@@ -39,9 +41,9 @@ class BaseAccessToken(object):
         self.username = self.get_setting('username')
         self.password = self.get_setting('password')
 
-        required_settings = ['client_id','client_secret']
+        required_settings = ['client_id', 'client_secret']
         if not self.user:
-             required_settings += ['username', 'password']
+            required_settings += ['username', 'password']
 
         for required_setting in required_settings:
             if not getattr(self, required_setting):
@@ -70,15 +72,15 @@ class BaseAccessToken(object):
         Authorize and set self.cookies for next requests and return response of last request
         '''
         auth_uri = AuthorizationCode.build_auth_uri(
-            endpoint = self.authenticate_url,
-            client_id = self.client_id,
-            scope = self.scope,
-            redirect_uri = self.redirect_uri
+            endpoint=self.authenticate_url,
+            client_id=self.client_id,
+            scope=self.scope,
+            redirect_uri=self.redirect_uri,
         )
         log.debug(auth_uri)
 
         response = requests.get(auth_uri, headers=self.headers, cookies=self.cookies)
-        self.cookies = response.cookies
+        self.cookies, self.headers = response.cookies, response.headers
 
         log.debug('Response form dict: %s' % response.__dict__)
         log.debug('Response form content: %s' % response.content)
@@ -86,8 +88,8 @@ class BaseAccessToken(object):
         method, action, data = self.parse_auth_form(response.content)
 
         # submit auth form data
-        response = requests.post(action, data, cookies=self.cookies, headers=self.headers)
-        self.cookies = response.cookies
+        response = requests.post(action, data)  # , cookies=self.cookies, headers=self.headers)
+        self.cookies, self.headers = response.cookies, response.headers
 
         log.debug('Response auth dict: %s' % response.__dict__)
         log.debug('Response auth location: %s' % response.headers.get('location'))
@@ -96,7 +98,7 @@ class BaseAccessToken(object):
 
     def authorized_request(self, method='get', **kwargs):
 
-        if method not in ['get','post']:
+        if method not in ['get', 'post']:
             raise ValueError('Only `get` and `post` are allowed methods')
 
         if not self.cookies:
