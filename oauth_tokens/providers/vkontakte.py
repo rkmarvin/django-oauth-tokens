@@ -7,6 +7,7 @@ import logging
 
 log = logging.getLogger('oauth_tokens')
 
+
 class VkontakteAccessToken(BaseAccessToken):
 
     provider = 'vkontakte'
@@ -54,7 +55,7 @@ class VkontakteAccessToken(BaseAccessToken):
 
         # login from new place
         if response.content == 'security breach':
-            index_page = self.authorized_request(method='get', url='http://vk.com/')
+            #index_page = self.authorized_request(method='get', url='http://vk.com/')
             response = super(VkontakteAccessToken, self).authorize()
         elif response.content == '{"error":"invalid_request","error_description":"Security Error"}':
             # TODO: fix it
@@ -93,8 +94,8 @@ class VkontakteAccessToken(BaseAccessToken):
                 raise Exception("Impossible to find security check parameters")
 
             response = requests.post('http://vk.com/login.php',
-                headers = {'X-Requested-With': 'XMLHttpRequest'},
-                cookies = response.cookies,
-                data = {'act': 'security_check', 'code': self.get_setting('additional'), 'to': m[0][0], 'al_page': '4', 'hash': m[0][1]})
+                headers={'X-Requested-With': 'XMLHttpRequest'},
+                cookies=response.cookies,
+                data={'act': 'security_check', 'code': self.get_setting('additional'), 'to': m[0][0], 'al_page': '4', 'hash': m[0][1]})
 
         return response

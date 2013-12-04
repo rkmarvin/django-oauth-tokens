@@ -16,8 +16,10 @@ PROVIDERS = getattr(settings, 'OAUTH_TOKENS_PROVIDERS', {
 })
 PROVIDER_CHOICES = [((provider, provider.title())) for provider in PROVIDERS.keys()]
 
+
 class AccessTokenGettingError(Exception):
     pass
+
 
 class AccessTokenManager(models.Manager):
     '''
@@ -47,7 +49,7 @@ class AccessTokenManager(models.Manager):
         try:
             path = PROVIDERS[provider].split('.')
             module = '.'.join(path[:-1])
-            class_name = path[-1]
+            #class_name = path[-1]
             token_class = getattr(import_module(module), path[-1])
         except ImportError:
             raise ImproperlyConfigured("Impossible to find access token class with path %s" % PROVIDERS[provider])
@@ -66,6 +68,7 @@ class AccessTokenManager(models.Manager):
                 token = token_class(user=user).get()
                 assert token
             except Exception, e:
+                print "Error '%s' while getting new token for provider %s, user %s" % (e, provider, user)
                 log.error("Error '%s' while getting new token for provider %s, user %s" % (e, provider, user))
                 continue
 
@@ -81,6 +84,7 @@ class AccessTokenManager(models.Manager):
             raise AccessTokenGettingError("Error while updating tokens for provider %s" % provider)
 
         return access_tokens
+
 
 class AccessToken(models.Model):
     class Meta:
@@ -104,6 +108,7 @@ class AccessToken(models.Model):
 
     def __str__(self):
         return '#%s' % self.access_token
+
 
 class UserCredentials(models.Model):
 
