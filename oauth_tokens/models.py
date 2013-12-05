@@ -68,7 +68,6 @@ class AccessTokenManager(models.Manager):
                 token = token_class(user=user).get()
                 assert token
             except Exception, e:
-                print "Error '%s' while getting new token for provider %s, user %s" % (e, provider, user)
                 log.error("Error '%s' while getting new token for provider %s, user %s" % (e, provider, user))
                 continue
 
