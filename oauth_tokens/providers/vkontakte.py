@@ -55,7 +55,7 @@ class VkontakteAccessToken(BaseAccessToken):
 
         # login from new place
         if response.content == 'security breach':
-            #index_page = self.authorized_request(method='get', url='http://vk.com/')
+            self.authorized_request(method='get', url='http://vk.com/')
             response = super(VkontakteAccessToken, self).authorize()
         elif response.content == '{"error":"invalid_request","error_description":"Security Error"}':
             # TODO: fix it
